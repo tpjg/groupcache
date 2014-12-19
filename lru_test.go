@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package lru
+package groupcache
 
 import (
 	"testing"
@@ -44,14 +44,18 @@ var getTests = []struct {
 		complexStruct{1, simpleStruct{2, "three"}}, true},
 }
 
+var b1234 = ByteView{
+	s: "1234",
+}
+
 func TestGet(t *testing.T) {
 	for _, tt := range getTests {
 		lru := New(0)
-		lru.Add(tt.keyToAdd, 1234)
+		lru.Add(tt.keyToAdd, b1234)
 		val, ok := lru.Get(tt.keyToGet)
 		if ok != tt.expectedOk {
 			t.Fatalf("%s: cache hit = %v; want %v", tt.name, ok, !ok)
-		} else if ok && val != 1234 {
+		} else if ok && !val.Equal(b1234) {
 			t.Fatalf("%s expected get to return 1234 but got %v", tt.name, val)
 		}
 	}
@@ -59,10 +63,10 @@ func TestGet(t *testing.T) {
 
 func TestRemove(t *testing.T) {
 	lru := New(0)
-	lru.Add("myKey", 1234)
+	lru.Add("myKey", b1234)
 	if val, ok := lru.Get("myKey"); !ok {
 		t.Fatal("TestRemove returned no match")
-	} else if val != 1234 {
+	} else if !val.Equal(b1234) {
 		t.Fatalf("TestRemove failed.  Expected %d, got %v", 1234, val)
 	}
 
